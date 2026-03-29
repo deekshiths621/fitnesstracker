@@ -6,6 +6,7 @@ import { MenuRounded, Brightness4, Brightness7 } from "@mui/icons-material";
 import { Avatar } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, toggleDarkMode } from "../redux/redusers/userSlice";
+import NotificationIcon from "./NotificationIcon";
 
 const Nav = styled.div`
   background-color: ${({ theme }) => theme.navbar};
@@ -198,20 +199,45 @@ const Navbar = ({ currentUser }) => {
         </NavLogo>
 
         <MobileMenu isOpen={isOpen}>
-          <Navlink to="/">Dashboard</Navlink>
-          <Navlink to="/workouts">Workouts</Navlink>
-          <Navlink to="/goals">Goals</Navlink>
-          <Navlink to="/profile">Profile</Navlink>
+          {currentUser?.role === "admin" ? (
+            <>
+              <Navlink to="/">Admin Dashboard</Navlink>
+              <Navlink to="/admin/manage-users">Manage Users</Navlink>
+              <Navlink to="/admin/workouts">Manage Workouts</Navlink>
+              <Navlink to="/admin/reports">Reports</Navlink>
+              <Navlink to="/admin/notifications">Notifications</Navlink>
+            </>
+          ) : (
+            <>
+              <Navlink to="/">Dashboard</Navlink>
+              <Navlink to="/workouts">Workouts</Navlink>
+              <Navlink to="/goals">Goals</Navlink>
+              <Navlink to="/profile">Profile</Navlink>
+            </>
+          )}
         </MobileMenu>
 
         <NavItems>
-          <Navlink to="/">Dashboard</Navlink>
-          <Navlink to="/workouts">Workouts</Navlink>
-          <Navlink to="/goals">Goals</Navlink>
-          <Navlink to="/profile">Profile</Navlink>
+          {currentUser?.role === "admin" ? (
+            <>
+              <Navlink to="/">Admin Dashboard</Navlink>
+              <Navlink to="/admin/manage-users">Manage Users</Navlink>
+              <Navlink to="/admin/workouts">Manage Workouts</Navlink>
+              <Navlink to="/admin/reports">Reports</Navlink>
+              <Navlink to="/admin/notifications">Notifications</Navlink>
+            </>
+          ) : (
+            <>
+              <Navlink to="/">Dashboard</Navlink>
+              <Navlink to="/workouts">Workouts</Navlink>
+              <Navlink to="/goals">Goals</Navlink>
+              <Navlink to="/profile">Profile</Navlink>
+            </>
+          )}
         </NavItems>
 
         <UserContainer>
+          <NotificationIcon />
           <IconButton onClick={() => dispatch(toggleDarkMode())}>
             {darkMode ? (
               <Brightness7 sx={{ fontSize: "20px" }} />

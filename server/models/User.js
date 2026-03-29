@@ -28,6 +28,16 @@ const UserSchema = new mongoose.Schema(
     weight: {
       type: Number,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );

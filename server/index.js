@@ -16,10 +16,19 @@ app.use("/api/user/", UserRoutes);
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || "Something went wrong";
+  
+  // Log error details for debugging
+  console.error(`[ERROR] Status: ${status}`);
+  console.error(`[ERROR] Message: ${message}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.error(`[ERROR] Stack: ${err.stack}`);
+  }
+  
   return res.status(status).json({
     success: false,
     status,
     message,
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
   });
 });
 

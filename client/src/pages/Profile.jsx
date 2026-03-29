@@ -141,6 +141,7 @@ const Profile = () => {
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [stats, setStats] = useState({
     memberSince: "N/A",
     totalWorkouts: 0,
@@ -158,12 +159,39 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      setStatsLoading(true);
       try {
         const token = localStorage.getItem("fittrack-app-token");
+        if (!token) {
+          console.warn("No token available for fetching stats");
+          setStatsLoading(false);
+          return;
+        }
+
+        console.log("Fetching user stats...");
         const response = await getUserStats(token);
-        setStats(response.data);
+        console.log("User stats response:", response.data);
+        
+        if (response.data) {
+          setStats({
+            memberSince: response.data.memberSince || "N/A",
+            totalWorkouts: response.data.totalWorkouts || 0,
+            totalCalories: response.data.totalCalories || 0,
+            streakDays: response.data.streakDays || 0,
+          });
+        }
       } catch (err) {
         console.error("Error fetching stats:", err);
+        console.error("Error response:", err.response?.data);
+        // Use default values on error
+        setStats({
+          memberSince: "N/A",
+          totalWorkouts: 0,
+          totalCalories: 0,
+          streakDays: 0,
+        });
+      } finally {
+        setStatsLoading(false);
       }
     };
     fetchStats();
@@ -313,19 +341,19 @@ const Profile = () => {
           <StatsGrid>
             <StatCard>
               <StatLabel>Member Since</StatLabel>
-              <StatValue>{stats.memberSince}</StatValue>
+              <StatValue>{statsLoading ? "..." : stats.memberSince}</StatValue>
             </StatCard>
             <StatCard>
               <StatLabel>Total Workouts</StatLabel>
-              <StatValue>{stats.totalWorkouts}</StatValue>
+              <StatValue>{statsLoading ? "..." : stats.totalWorkouts}</StatValue>
             </StatCard>
             <StatCard>
               <StatLabel>Total Calories</StatLabel>
-              <StatValue>{stats.totalCalories.toLocaleString()}</StatValue>
+              <StatValue>{statsLoading ? "..." : stats.totalCalories.toLocaleString()}</StatValue>
             </StatCard>
             <StatCard>
               <StatLabel>Streak Days</StatLabel>
-              <StatValue>{stats.streakDays}</StatValue>
+              <StatValue>{statsLoading ? "..." : stats.streakDays}</StatValue>
             </StatCard>
           </StatsGrid>
         </ProfileCard>

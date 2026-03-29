@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { GpsFixed, TrendingUp } from "@mui/icons-material";
 import TextInput from "../components/TextInput";
 import Button from "../components/Button";
-import { setGoals } from "../api";
+import { setGoals, getGoals } from "../api";
 import { setGoals as setReduxGoals } from "../redux/redusers/userSlice";
 
 const Container = styled.div`
@@ -146,7 +146,11 @@ const StatValue = styled.div`
 const Goals = () => {
   const { goals } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const token = localStorage.getItem("fittrack-app-token");
+  
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     dailyCalories: goals?.dailyCalories || 2000,
     weeklyWorkouts: goals?.weeklyWorkouts || 5,
@@ -158,6 +162,55 @@ const Goals = () => {
     weekWorkouts: 3,
   });
 
+  // Fetch goals from database on component mount
+  useEffect(() => {
+    const fetchGoalsFromDB = async () => {
+      if (!token) {
+        console.warn("No token available for fetching goals");
+        setFetchLoading(false);
+        return;
+      }
+
+      try {
+        console.log("Fetching goals from database...");
+        const response = await getGoals(token);
+        console.log("Goals fetched successfully:", response.data);
+        
+        const goalsData = response.data?.goals || response.data;
+        
+        // Update formData with fetched goals
+        setFormData({
+          dailyCalories: goalsData.dailyCalories || 2000,
+          weeklyWorkouts: goalsData.weeklyWorkouts || 5,
+          maxWeight: goalsData.maxWeight || 100,
+        });
+
+        // Dispatch to Redux to store goals globally
+        dispatch(setReduxGoals({
+          dailyCalories: goalsData.dailyCalories || 2000,
+          weeklyWorkouts: goalsData.weeklyWorkouts || 5,
+          maxWeight: goalsData.maxWeight || 100,
+        }));
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching goals:", err);
+        console.error("Error response:", err.response?.data);
+        setError("Failed to load goals. Using default values.");
+        // Use default values on error
+        setFormData({
+          dailyCalories: 2000,
+          weeklyWorkouts: 5,
+          maxWeight: 100,
+        });
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    fetchGoalsFromDB();
+  }, [token, dispatch]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -168,13 +221,18 @@ const Goals = () => {
 
   const handleSaveGoals = async () => {
     setLoading(true);
-    const token = localStorage.getItem("fittrack-app-token");
     try {
-      await setGoals(token, formData);
+      console.log("Saving goals:", formData);
+      const response = await setGoals(token, formData);
+      console.log("Goals saved successfully:", response.data);
+      
       dispatch(setReduxGoals(formData));
+      setError(null);
       alert("Goals updated successfully!");
     } catch (err) {
       console.error("Error saving goals:", err);
+      console.error("Error response:", err.response?.data);
+      setError("Failed to save goals. Please try again.");
       alert("Failed to save goals");
     }
     setLoading(false);
@@ -187,6 +245,18 @@ const Goals = () => {
     <Container>
       <Wrapper>
         <Title>Fitness Goals</Title>
+
+        {error && (
+          <Card style={{ backgroundColor: "rgba(255, 76, 76, 0.1)", borderColor: "#FF4C4C" }}>
+            <div style={{ color: "#FF4C4C", fontSize: "14px" }}>⚠️ {error}</div>
+          </Card>
+        )}
+
+        {fetchLoading && (
+          <Card>
+            <div style={{ textAlign: "center", padding: "20px" }}>Loading your goals...</div>
+          </Card>
+        )}
 
         {/* Daily Goals */}
         <Card>

@@ -70,3 +70,86 @@ export const updateGoals = async (token, data) =>
   await API.put(`/user/goals`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+// Admin Endpoints
+export const getAllUsers = async (token) =>
+  await API.get(`/user/admin/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getUserById = async (token, userId) =>
+  await API.get(`/user/admin/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const updateUser = async (token, userId, data) =>
+  await API.put(`/user/admin/user/${userId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteUserById = async (token, userId) =>
+  await API.delete(`/user/admin/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminStats = async (token) =>
+  await API.get(`/user/admin/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getSystemReports = async (token) =>
+  await API.get(`/user/admin/reports`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Notifications
+export const getAllNotifications = async (token) =>
+  await API.get(`/user/admin/notifications`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createNotification = async (token, data) =>
+  await API.post(`/user/admin/notifications`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const updateNotification = async (token, id, data) =>
+  await API.put(`/user/admin/notifications/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteNotification = async (token, id) =>
+  await API.delete(`/user/admin/notifications/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const markNotificationAsSeen = async (token, id) =>
+  await API.put(`/user/admin/notifications/${id}/seen`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Admin Workout Management APIs
+export const getAllWorkouts = async (token) =>
+  await API.get(`/user/admin/workouts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getWorkoutById = async (token, workoutId) =>
+  await API.get(`/user/admin/workout/${workoutId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminWorkout = async (token, data) =>
+  await API.post(`/user/admin/workout`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const updateAdminWorkout = async (token, workoutId, data) =>
+  await API.put(`/user/admin/workout/${workoutId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteAdminWorkout = async (token, workoutId) =>
+  await API.delete(`/user/admin/workout/${workoutId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });

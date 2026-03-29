@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { EmojiEvents } from "@mui/icons-material";
+import { getPersonalRecords } from "../../api/index.js";
+import { useSelector } from "react-redux";
 
 const Card = styled.div`
   flex: 1;
@@ -57,10 +59,22 @@ const PRItem = styled.div`
   }
 `;
 
+const ExerciseInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
 const ExerciseName = styled.div`
   font-weight: 600;
   font-size: 14px;
   color: ${({ theme }) => theme.text_primary};
+`;
+
+const ExerciseDetails = styled.div`
+  font-weight: 400;
+  font-size: 12px;
+  color: ${({ theme }) => theme.text_secondary};
 `;
 
 const PRValue = styled.div`
@@ -69,13 +83,65 @@ const PRValue = styled.div`
   color: ${({ theme }) => theme.primary};
 `;
 
+const LoadingText = styled.div`
+  text-align: center;
+  color: ${({ theme }) => theme.text_secondary};
+  font-size: 14px;
+  padding: 20px 0;
+`;
+
+const ErrorText = styled.div`
+  text-align: center;
+  color: #e74c3c;
+  font-size: 14px;
+  padding: 20px 0;
+`;
+
+const EmptyText = styled.div`
+  text-align: center;
+  color: ${({ theme }) => theme.text_secondary};
+  font-size: 14px;
+  padding: 20px 0;
+  font-style: italic;
+`;
+
 const PersonalRecords = ({ data }) => {
-  const personalRecords = [
-    { name: "Bench Press", weight: "100 kg", date: "2024-03-20" },
-    { name: "Squat", weight: "150 kg", date: "2024-03-18" },
-    { name: "Deadlift", weight: "200 kg", date: "2024-03-15" },
-    { name: "Lat Pulldown", weight: "120 kg", date: "2024-03-10" },
-  ];
+  const [personalRecords, setPersonalRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { currentUser } = useSelector((state) => state.user);
+  const token = currentUser?.token;
+
+  useEffect(() => {
+    const fetchPersonalRecords = async () => {
+      if (!token) {
+        console.warn("No token available for personal records");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        console.log("Fetching personal records with token:", token.substring(0, 20) + "...");
+        const response = await getPersonalRecords(token);
+        console.log("Personal Records Response:", response);
+        console.log("Response Data:", response.data);
+        
+        const records = response.data?.personalRecords || [];
+        console.log("Records fetched:", records);
+        setPersonalRecords(records.slice(0, 5)); // Show top 5 PRs
+      } catch (err) {
+        console.error("Error fetching personal records:", err);
+        console.error("Error message:", err.message);
+        console.error("Error response:", err.response?.data);
+        setError(err.response?.data?.message || "Failed to load personal records");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPersonalRecords();
+  }, [token]);
 
   return (
     <Card>
@@ -84,12 +150,25 @@ const PersonalRecords = ({ data }) => {
         Personal Records
       </Title>
       <PRList>
-        {personalRecords.map((pr, idx) => (
-          <PRItem key={idx}>
-            <ExerciseName>{pr.name}</ExerciseName>
-            <PRValue>{pr.weight}</PRValue>
-          </PRItem>
-        ))}
+        {loading ? (
+          <LoadingText>Loading records...</LoadingText>
+        ) : error ? (
+          <ErrorText>{error}</ErrorText>
+        ) : personalRecords.length === 0 ? (
+          <EmptyText>No personal records yet. Start working out!</EmptyText>
+        ) : (
+          personalRecords.map((pr, idx) => (
+            <PRItem key={idx}>
+              <ExerciseInfo>
+                <ExerciseName>{pr.workoutName}</ExerciseName>
+                <ExerciseDetails>
+                  {pr.category} • {pr.totalWorkouts} {pr.totalWorkouts === 1 ? "workout" : "workouts"}
+                </ExerciseDetails>
+              </ExerciseInfo>
+              <PRValue>{pr.maxWeight} kg</PRValue>
+            </PRItem>
+          ))
+        )}
       </PRList>
     </Card>
   );

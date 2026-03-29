@@ -24,6 +24,15 @@ const Span = styled.div`
   color: ${({ theme }) => theme.text_secondary + 90};
 `;
 
+const AdminNote = styled.div`
+  font-size: 13px;
+  color: ${({ theme }) => theme.primary};
+  background: ${({ theme }) => theme.primaryLight};
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid ${({ theme }) => theme.primary};
+`;
+
 const SignIn = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -63,6 +72,9 @@ const SignIn = () => {
       <div>
         <Title>Welcome to Fittrack 👋</Title>
         <Span>Please login with your details here</Span>
+        {/* <AdminNote>
+          💡 Admin: Use your admin credentials to access the admin dashboard
+        </AdminNote> */}
       </div>
       <div
         style={{
